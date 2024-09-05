@@ -16,7 +16,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <Layout>
+      <Layout user={user}>
         {loading && <div className="max-w-md mx-auto">
           <div className="flex flex-col space-y-3">
             <Skeleton className="h-[125px] w-[250px] rounded-xl" />

@@ -1,15 +1,14 @@
 import React from 'react';
 import LogoutButton from './LogoutButton';
-import { useAuth } from '@/hooks/useAuth';
 import { Toaster } from './ui';
+import { User } from 'firebase/auth';
 
 interface LayoutProps {
+  user: User | null;
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { user } = useAuth();
-
+const Layout: React.FC<LayoutProps> = ({ user, children }) => {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-primary text-white shadow-lg">
@@ -17,7 +16,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex items-center justify-end h-16">
             {user && (
               <div className="flex items-center">
-                <span className="mr-4">Welcome, {user.displayName || 'User'}</span>
+                <span className="mr-4">Welcome!</span>
                 <LogoutButton />
               </div>
             )}

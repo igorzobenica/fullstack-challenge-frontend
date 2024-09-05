@@ -107,8 +107,12 @@ const ProfilePage: React.FC<{ user: User }> = ({ user }) => {
       <div className="max-w-md mx-auto">
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Hello {user.displayName}</CardTitle>
-            <CardDescription>Fill in the form</CardDescription>
+            <CardTitle>
+              {user?.phoneNumber
+                ? `User: ${user?.phoneNumber}`
+                : "Update Your Profile"}
+            </CardTitle>
+            <CardDescription>You can update your name and email address below.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -150,7 +154,7 @@ const ProfilePage: React.FC<{ user: User }> = ({ user }) => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" loading={loading || fetching}>
+                <Button type="submit" loading={loading} disabled={fetching}>
                   Save
                 </Button>
               </form>
