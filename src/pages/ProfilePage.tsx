@@ -46,7 +46,6 @@ const ProfilePage: React.FC<{ user: User }> = ({ user }) => {
       email: user.email || "",
     },
   });
-  console.log(user);
 
   const { toast } = useToast();
 

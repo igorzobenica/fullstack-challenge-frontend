@@ -22,10 +22,8 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const phoneNumberSchema = z.object({
-  phoneNumber: z
-    .string()
-    .min(10, "Phone number is required")
-    // .regex(/^\d+$/, "Invalid phone number"),
+  phoneNumber: z.string().min(10, "Phone number is required"),
+  // .regex(/^\d+$/, "Invalid phone number"),
 });
 
 const verificationCodeSchema = z.object({
@@ -40,6 +38,7 @@ const LoginPage: React.FC = () => {
   const [verificationId, setVerificationId] = React.useState<string | null>(
     null
   );
+  const [loading, setLoading] = React.useState(false);
   const recaptchaVerifierRef = React.useRef<RecaptchaVerifier | null>(null);
 
   const phoneNumberForm = useForm<PhoneNumberFormValues>({
@@ -59,28 +58,29 @@ const LoginPage: React.FC = () => {
   React.useEffect(() => {
     try {
       const recaptchaVerifier = new RecaptchaVerifier(
-        auth, 'recaptcha-container',
+        auth,
+        "recaptcha-container",
         {
-          size: 'invisible',
+          size: "invisible",
           callback: (response: string) => {
-            console.log('reCAPTCHA solved. Token:', response);
+            console.log("reCAPTCHA solved. Token:", response);
           },
-        },
+        }
       );
-      
+
       recaptchaVerifier.render().then((widgetId) => {
-        console.log('reCAPTCHA rendered. Widget ID:', widgetId);
+        console.log("reCAPTCHA rendered. Widget ID:", widgetId);
       });
-  
+
       recaptchaVerifierRef.current = recaptchaVerifier;
     } catch (error) {
-      console.error('Error initializing reCAPTCHA:', error);
+      console.error("Error initializing reCAPTCHA:", error);
     }
   }, []);
 
   const handleSendVerificationCode = async (data: PhoneNumberFormValues) => {
+    setLoading(true);
     const { phoneNumber } = data;
-    console.log('Sending verification code to', phoneNumber);
     try {
       const recaptchaVerifier = recaptchaVerifierRef.current;
       if (recaptchaVerifier) {
@@ -93,10 +93,13 @@ const LoginPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Error sending verification code:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleVerifyCode = async (data: VerificationCodeFormValues) => {
+    setLoading(true);
     const { verificationCode } = data;
     if (verificationId) {
       try {
@@ -105,22 +108,26 @@ const LoginPage: React.FC = () => {
           verificationCode
         );
         await signInWithCredential(auth, credential);
-        navigate('/profile');
+        navigate("/profile");
       } catch (error) {
         console.error("Error verifying code:", error);
+      } finally {
+        setLoading(false);
       }
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+    <div className="flex flex-col items-center justify-center">
       <div className="max-w-md w-full">
         <h1 className="text-2xl font-bold mb-6">Login</h1>
 
         {!verificationId && (
           <Form {...phoneNumberForm}>
             <form
-              onSubmit={phoneNumberForm.handleSubmit(handleSendVerificationCode)}
+              onSubmit={phoneNumberForm.handleSubmit(
+                handleSendVerificationCode
+              )}
               className="space-y-8"
             >
               <FormField
@@ -137,7 +144,7 @@ const LoginPage: React.FC = () => {
                 )}
               />
               <div id="recaptcha-container" />
-              <Button type="submit">Send Verification Code</Button>
+              <Button type="submit" loading={loading}>Send Verification Code</Button>
             </form>
           </Form>
         )}
@@ -163,7 +170,9 @@ const LoginPage: React.FC = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Verify Code</Button>
+              <Button type="submit" loading={loading}>
+                Verify Code
+              </Button>
             </form>
           </Form>
         )}
