@@ -1,6 +1,8 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export const getProfile = async (token: string) => {
   const response = await fetch(
-    'https://us-central1-fullstack-challenge-5a3f1.cloudfunctions.net/app/profile',
+    `${API_BASE_URL}/profile`,
     {
       method: 'GET',
       headers: {
@@ -25,7 +27,7 @@ export const saveProfile = async (
   phoneNumber: string,
 ) => {
   const response = await fetch(
-    'https://us-central1-fullstack-challenge-5a3f1.cloudfunctions.net/app/profile',
+    `${API_BASE_URL}/profile`,
     {
       method: 'POST',
       headers: {
