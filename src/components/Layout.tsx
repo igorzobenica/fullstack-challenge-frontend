@@ -1,11 +1,11 @@
-import React from 'react';
-import LogoutButton from './LogoutButton';
-import { Toaster } from './ui';
-import { User } from 'firebase/auth';
+import React from 'react'
+import LogoutButton from './LogoutButton'
+import { Toaster } from './ui'
+import { User } from 'firebase/auth'
 
 interface LayoutProps {
-  user: User | null;
-  children: React.ReactNode;
+  user: User | null
+  children: React.ReactNode
 }
 
 const Layout: React.FC<LayoutProps> = ({ user, children }) => {
@@ -33,7 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ user, children }) => {
         © 2024 Fullstack Challenge. All rights reserved.
       </footer>
     </div>
-  );
-};
+  )
+}
 
-export default Layout;
+export default Layout

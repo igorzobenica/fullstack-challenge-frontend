@@ -1,29 +1,29 @@
-import { signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-import { Button } from "./ui";
-import { auth } from "../../firebaseConfig";
-import { useState } from "react";
+import { signOut } from 'firebase/auth'
+import { useNavigate } from 'react-router-dom'
+import { Button } from './ui'
+import { auth } from '../../firebaseConfig'
+import { useState } from 'react'
 
 const LogoutButton: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
   const handleLogout = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      await signOut(auth);
-      navigate("/login");
+      await signOut(auth)
+      navigate('/login')
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error('Error signing out:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Button variant="secondary" onClick={handleLogout} loading={loading}>
       Logout
     </Button>
-  );
-};
+  )
+}
 
-export default LogoutButton;
+export default LogoutButton

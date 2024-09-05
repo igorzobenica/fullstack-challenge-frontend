@@ -12,95 +12,95 @@ import {
   FormLabel,
   FormMessage,
   Input,
-} from "@/components/ui";
-import { getProfile, saveProfile } from "@/services/profileApi";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { User } from "firebase/auth";
-import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui'
+import { getProfile, saveProfile } from '@/services/profileApi'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { User } from 'firebase/auth'
+import React, { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { useToast } from '@/hooks/use-toast'
 
 const formSchema = z.object({
   name: z
     .string()
     .min(1, {
-      message: "Name is required.",
+      message: 'Name is required.',
     })
     .max(35, {
       message: "Name can't be more than 35 characters.",
     }),
   email: z
     .string()
-    .min(1, { message: "Email is required" })
-    .email("Email is invalid"),
-});
+    .min(1, { message: 'Email is required' })
+    .email('Email is invalid'),
+})
 
 const ProfilePage: React.FC<{ user: User }> = ({ user }) => {
-  const [fetching, setFetching] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const [fetching, setFetching] = React.useState(false)
+  const [loading, setLoading] = React.useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: user.displayName || "",
-      email: user.email || "",
+      name: user.displayName || '',
+      email: user.email || '',
     },
-  });
+  })
 
-  const { toast } = useToast();
+  const { toast } = useToast()
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      setFetching(true);
+      setFetching(true)
       try {
-        const token = await user.getIdToken();
-        const data = await getProfile(token);
-        form.setValue("name", data.name);
-        form.setValue("email", data.email);
+        const token = await user.getIdToken()
+        const data = await getProfile(token)
+        form.setValue('name', data.name)
+        form.setValue('email', data.email)
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        console.error('Error fetching profile:', error)
         toast({
-          variant: "destructive",
-          title: "Failed to fetch profile data.",
+          variant: 'destructive',
+          title: 'Failed to fetch profile data.',
           description:
             error instanceof Error
               ? error.message
-              : "Please try again later, and if issue still persist please contact the support",
-        });
+              : 'Please try again later, and if issue still persist please contact the support',
+        })
       } finally {
-        setFetching(false);
+        setFetching(false)
       }
-    };
+    }
 
     if (user.phoneNumber) {
-      fetchProfileData();
+      fetchProfileData()
     }
-  }, [user, form, toast]);
+  }, [user, form, toast])
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const token = await user.getIdToken();
+      const token = await user.getIdToken()
       await saveProfile(
         token,
         values.name,
         values.email,
-        user.phoneNumber || ""
-      );
+        user.phoneNumber || '',
+      )
       toast({
-        title: "Name and email are successfully saved!",
-      });
+        title: 'Name and email are successfully saved!',
+      })
     } catch (error) {
-      console.error(error);
+      console.error(error)
       toast({
-        variant: "destructive",
-        title: "Failed to save profile",
+        variant: 'destructive',
+        title: 'Failed to save profile',
         description: error instanceof Error ? error.message : undefined,
-      });
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <>
@@ -110,9 +110,11 @@ const ProfilePage: React.FC<{ user: User }> = ({ user }) => {
             <CardTitle>
               {user?.phoneNumber
                 ? `User: ${user?.phoneNumber}`
-                : "Update Your Profile"}
+                : 'Update Your Profile'}
             </CardTitle>
-            <CardDescription>You can update your name and email address below.</CardDescription>
+            <CardDescription>
+              You can update your name and email address below.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -163,7 +165,7 @@ const ProfilePage: React.FC<{ user: User }> = ({ user }) => {
         </Card>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default ProfilePage;
+export default ProfilePage
