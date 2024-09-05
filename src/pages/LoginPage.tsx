@@ -11,6 +11,10 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
 } from "@/components/ui";
 import { auth } from "../../firebaseConfig";
 import {
@@ -20,14 +24,23 @@ import {
   signInWithPhoneNumber,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { FirebaseError } from "firebase/app";
 
 const phoneNumberSchema = z.object({
-  phoneNumber: z.string().min(10, "Phone number is required"),
-  // .regex(/^\d+$/, "Invalid phone number"),
+  phoneNumber: z
+    .string()
+    .min(10, "Phone number is required")
+    .regex(
+      /^\+[1-9]\d{1,14}$/,
+      "Phone number must be in E.164 format (e.g., +1234567890)"
+    ),
 });
 
 const verificationCodeSchema = z.object({
-  verificationCode: z.string().min(6, "Verification code is required"),
+  verificationCode: z
+    .string()
+    .min(6, "Your one-time password must be 6 characters."),
 });
 
 type PhoneNumberFormValues = z.infer<typeof phoneNumberSchema>;
@@ -35,6 +48,7 @@ type VerificationCodeFormValues = z.infer<typeof verificationCodeSchema>;
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [verificationId, setVerificationId] = React.useState<string | null>(
     null
   );
@@ -75,8 +89,13 @@ const LoginPage: React.FC = () => {
       recaptchaVerifierRef.current = recaptchaVerifier;
     } catch (error) {
       console.error("Error initializing reCAPTCHA:", error);
+      toast({
+        title: "reCAPTCHA Error",
+        description: "Failed to initialize reCAPTCHA. Please refresh the page.",
+        variant: "destructive",
+      });
     }
-  }, []);
+  }, [toast]);
 
   const handleSendVerificationCode = async (data: PhoneNumberFormValues) => {
     setLoading(true);
@@ -90,9 +109,32 @@ const LoginPage: React.FC = () => {
           recaptchaVerifier
         );
         setVerificationId(confirmationResult.verificationId);
+        toast({
+          title: "Success",
+          description: "Verification code sent successfully!",
+        });
       }
     } catch (error) {
-      console.error("Error sending verification code:", error);
+      if (
+        error instanceof FirebaseError &&
+        error.code === "auth/invalid-phone-number"
+      ) {
+        console.error("Invalid phone number:", error);
+        toast({
+          title: "Invalid phone number. Please try again.",
+          description: "Phone number must be in E.164 format (e.g., +1234567890)",
+          variant: "destructive",
+        });
+      } else {
+        console.error("Error sending verification code:", { error });
+        toast({
+          title: error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.",
+          description: "Please refresh the page and try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -108,9 +150,33 @@ const LoginPage: React.FC = () => {
           verificationCode
         );
         await signInWithCredential(auth, credential);
+        toast({
+          title: "Success",
+          description: "Logged in successfully!",
+        });
         navigate("/profile");
       } catch (error) {
-        console.error("Error verifying code:", error);
+        if (
+          error instanceof FirebaseError &&
+          error.code === "auth/invalid-verification-code"
+        ) {
+          console.error("Error verifying code:", error);
+          toast({
+            title: "Invalid verification code.",
+            description: "Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          console.error("Error sending verification code:", { error });
+          toast({
+            title: "Failed to verify code. Please try again.",
+            description: error instanceof Error
+            ? error.message
+            : "Failed to verify code. Please try again.",
+            variant: "destructive",
+          });
+        }
+        
       } finally {
         setLoading(false);
       }
@@ -140,11 +206,17 @@ const LoginPage: React.FC = () => {
                       <Input placeholder="Enter your phone number" {...field} />
                     </FormControl>
                     <FormMessage />
+                    <FormDescription>
+                      By tapping Verify, an SMS may be sent. Message & data
+                      rates may apply.
+                    </FormDescription>
                   </FormItem>
                 )}
               />
               <div id="recaptcha-container" />
-              <Button type="submit" loading={loading}>Send Verification Code</Button>
+              <Button type="submit" loading={loading}>
+                Verify
+              </Button>
             </form>
           </Form>
         )}
@@ -159,13 +231,23 @@ const LoginPage: React.FC = () => {
                 name="verificationCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Verification Code</FormLabel>
+                    <FormLabel>Verify your phone number</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter the verification code"
-                        {...field}
-                      />
+                      <InputOTP maxLength={6} {...field}>
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} />
+                          <InputOTPSlot index={1} />
+                          <InputOTPSlot index={2} />
+                          <InputOTPSlot index={3} />
+                          <InputOTPSlot index={4} />
+                          <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
                     </FormControl>
+                    <FormDescription>
+                      Please enter the 6-digit code we sent to your phone
+                      number.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
